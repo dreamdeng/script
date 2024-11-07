@@ -3,12 +3,11 @@
 ai外教
 
 [rewrite_local]
-
-^https:\/\/(chatai\.qupeiyin\.com\/member\/index|www\.longstargpt\.com\/member\/index\/chatgpt\/chat\/sseV2|chatai\.qupeiyin\.com\/lesson\/getLessons) url script-response-body url https://github.com/dreamdeng/script/blob/main/aiwaijiao.js
+^https:\/\/(chatai\.qupeiyin\.com\/member\/index|www\.longstargpt\.com\/member\/index\/chatgpt\/chat\/sseV2|chatai\.qupeiyin\.com\/lesson\/getLessons) url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/aiwaijiao.js
 
 [mitm] 
 hostname = chatai.qupeiyin.com
-*************************************/
+*/
 
 var anye = $response.body
 anye = anye.replace(/vip_endtime":".*?"/g,'vip_endtime":"4072302236"')

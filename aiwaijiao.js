@@ -1,7 +1,7 @@
 /*
 
 ai外教
-
+*/
 [rewrite_local]
 ^https:\/\/(chatai\.qupeiyin\.com\/member\/index|www\.longstargpt\.com\/member\/index\/chatgpt\/chat\/sseV2|chatai\.qupeiyin\.com\/lesson\/getLessons) url script-response-body https://github.com/dreamdeng/script/blob/main/aiwaijiao.js
 
@@ -9,7 +9,7 @@ ai外教
 
 hostname = chatai.qupeiyin.com
 
-*/
+
 
 var body = $response.body;
 

@@ -4,7 +4,8 @@ ai外教
 
 [rewrite_local]
 
-^https?://chatai\.qupeiyin\.com/(user/memberData|member/index|basic/userModule|member/index) url https://github.com/dreamdeng/script/blob/main/aiwaijiao.js
+^https:\/\/(chatai\.qupeiyin\.com\/member\/index|www\.longstargpt\.com\/member\/index\/chatgpt\/chat\/sseV2|chatai\.qupeiyin\.com\/lesson\/getLessons) url script-response-body url https://github.com/dreamdeng/script/blob/main/aiwaijiao.js
+
 [mitm] 
 hostname = chatai.qupeiyin.com
 *************************************/

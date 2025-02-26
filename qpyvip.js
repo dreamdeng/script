@@ -1,6 +1,17 @@
 // 趣配音VIP脚本
 // hostname = chatai.qupeiyin.com
 
+/*
+
+ai外教
+
+[rewrite_local]
+^https?://chatai\.qupeiyin\.com/(user/memberData|member/index|basic/userModule|member/index) url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/qpyvip.js
+
+[mitm] 
+hostname = chatai.qupeiyin.com
+*/
+
 const url = $request.url;
 const body = $response.body;
 

@@ -1,6 +1,6 @@
 /*
 [script]
-^https?:\/\/.*\/api\/learn\/camp\/[^/]+\/book\/[^/]+(?:/detail)?$ url script-response-body douhao_lessons.js
+^https?:\/\/.*\/api\/learn\/camp\/[^/]+\/book\/[^/]+(?:/detail)?$ url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/douhao_lessons.js
 */
 
 let obj = JSON.parse($response.body);

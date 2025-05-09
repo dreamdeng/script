@@ -1,6 +1,9 @@
 /*
-[script]
+[rewrite_local]
 ^https?:\/\/.*\/api\/learn\/camp\/[^/]+$ url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/douhao_camp.js
+
+[mitm]
+hostname = douhao.co
 */
 
 let obj = JSON.parse($response.body);

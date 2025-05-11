@@ -30,6 +30,8 @@ if (obj) {
     // 修改后记录新值
     console.log(">>> [douhao_camp] 修改后 canLearn 值为: " + obj.canLearn);
 
+    obj.isFree = true;
+    console.log(">>> [douhao_camp] 修改后 isFree 值为: " + obj.isFree);
 } else {
     // 如果数据结构不符合预期，打印日志
     console.log("!!! [douhao_camp] 解析后的对象为空或未定义。");

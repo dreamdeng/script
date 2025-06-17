@@ -7,6 +7,15 @@
 [mitm] 
 hostname = ma.qunxiang.club
 */
+// 视频链接提取脚本
+// hostname = ma.qunxiang.club
+/*
+视频链接提取
+[rewrite_local]
+^https?://ma\.qunxiang\.club/chapter url script-response-body https://raw.githubusercontent.com/your-repo/video-extractor.js
+[mitm] 
+hostname = ma.qunxiang.club
+*/
 
 const url = $request.url;
 const body = $response.body;
@@ -31,11 +40,15 @@ if (url.includes("ma.qunxiang.club/chapter")) {
       console.log(`[视频链接提取] 课程名称: ${lessonName}`);
       console.log(`[视频链接提取] 视频时长: ${lessonLength}`);
       
-      // 发送通知
+      // 发送可点击的通知
       $notify(
         "视频链接提取成功", 
         `课程: ${lessonName}`,
-        `时长: ${lessonLength}\n链接: ${videoUrl}`
+        `时长: ${lessonLength}\n点击此通知打开视频`,
+        {
+          "open-url": videoUrl,
+          "media-url": videoUrl
+        }
       );
       
       console.log("[视频链接提取] 通知已发送");
@@ -46,7 +59,8 @@ if (url.includes("ma.qunxiang.club/chapter")) {
       $notify(
         "视频链接提取失败", 
         "未找到有效链接",
-        "请检查接口响应数据"
+        "请检查接口响应数据",
+        {}
       );
     }
   } catch (error) {
@@ -56,7 +70,8 @@ if (url.includes("ma.qunxiang.club/chapter")) {
     $notify(
       "视频链接提取错误", 
       "JSON解析失败",
-      `错误信息: ${error.message}`
+      `错误信息: ${error.message}`,
+      {}
     );
   }
 } else {

@@ -3,7 +3,7 @@
 /*
 视频链接提取
 [rewrite_local]
-^https?://ma\.qunxiang\.club/chapter url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/video-extractor.js
+^https?://ma\.qunxiang\.club/chapter url script-response-body https://raw.githubusercontent.com/dreamdeng/script/main/video-extractor.js
 [mitm] 
 hostname = ma.qunxiang.club
 */

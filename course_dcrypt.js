@@ -6,7 +6,6 @@
 hostname = zs.mifxcx.com
 */
 
-// 脚本的主处理函数
 const url = $request.url;
 const body = $response.body;
 
@@ -19,26 +18,52 @@ if (url.includes("/api/app/courseInfo")) {
 
             // 遍历课程菜单
             obj.data.menu.forEach((item, index) => {
-                if (item.url) {
+                // 简单检查一下URL是否是加密格式
+                if (item.url && typeof item.url === 'string' && item.url.length > 20) { 
                     console.log(`正在处理第 ${index + 1} 个课程: ${item.title}`);
                     const originalUrl = item.url;
                     // 调用解密函数
                     const decryptedUrl = decrypt_url(originalUrl);
-                    console.log(`解密成功: ${decryptedUrl}`);
-                    // 将解密后的URL替换回原位
-                    item.url = decryptedUrl;
+
+                    if (decryptedUrl !== originalUrl) {
+                        console.log(`解密成功: ${decryptedUrl}`);
+                        
+                        // 为每个解密成功的链接生成一个可点击的通知
+                        $notify(
+                            "课程链接已解密",
+                            `课程: ${item.title}`,
+                            "点击此通知可在浏览器中打开视频链接。",
+                            { "open-url": decryptedUrl }
+                        );
+
+                        // 同时保留App内直接播放的功能
+                        item.url = decryptedUrl;
+                    } else {
+                        console.log(`解密失败或无需解密: ${item.title}`);
+                    }
                 }
             });
-
-            console.log("所有URL解密并替换完成。");
-            // 将修改后的对象转换回JSON字符串并返回
+            
+            console.log("所有URL处理完成。");
+            // 将修改后的对象转换回JSON字符串并返回给App
             $done({ body: JSON.stringify(obj) });
+
         } else {
             console.log("响应体中未找到 'data.menu' 数组，脚本不执行任何操作。");
+            $notify(
+                "视频链接提取失败",
+                "数据格式错误",
+                "请检查接口响应数据，未找到课程列表。"
+            );
             $done({});
         }
     } catch (e) {
         console.log("脚本处理出错:", e);
+        $notify(
+            "视频链接提取失败",
+            "脚本执行异常",
+            `错误详情: ${e.message}`
+        );
         $done({});
     }
 } else {

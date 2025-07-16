@@ -1,13 +1,10 @@
 /*
- * Quantumult X Script
- *
- * 
- *
- * 使用方法：
- * 1. 在 Quantumult X 的 [rewrite_local] 部分添加以下行：
- * https:\/\/zs\.mifxcx\.com\/public\/index\.php\/api\/app\/courseInfo url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/course_dcrypt.js
- * 
- */
+[rewrite_local]
+^https:\/\/zs\.mifxcx\.com\/public\/index\.php\/api\/app\/courseInfo url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/course_dcrypt.js
+
+[mitm]
+hostname = zs.mifxcx.com
+*/
 
 // 脚本的主处理函数
 const url = $request.url;

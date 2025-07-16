@@ -5,10 +5,8 @@
  *
  * 使用方法：
  * 1. 在 Quantumult X 的 [rewrite_local] 部分添加以下行：
- * https:\/\/zs\.mifxcx\.com\/public\/index\.php\/api\/app\/courseInfo url script-response-body https://raw.githubusercontent.com/your-repo/your-script.js
- * (注意: 请将 https://raw.githubusercontent.com/your-repo/your-script.js 替换为您存放此脚本的实际URL)
- * 2. 或者，将此脚本保存到 Quantumult X 的本地脚本文件夹中，并在 [rewrite_local] 中引用本地路径。
- * 3. 启用 Quantumult X 的重写（Rewrite）功能。
+ * https:\/\/zs\.mifxcx\.com\/public\/index\.php\/api\/app\/courseInfo url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/course_dcrypt.js
+ * 
  */
 
 // 脚本的主处理函数

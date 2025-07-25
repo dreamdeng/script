@@ -1,9 +1,10 @@
 /*
 
 [rewrite_local]
-# 统一处理两个接口
-^https://mapp-03\.hnheibaidian\.com/user/content/course/page\?.*$ url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/course_video_extractor.js
-^https://mapp-03\.hnheibaidian\.com/user/content/course/menu/list/condition-course-id\?courseId=\d+ url script-request-header https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/video-extractor.js
+# 统一脚本处理两个接口
+^https://mapp-03\.hnheibaidian\.com/user/content/course/page\?.*$ url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/unified_script.js
+^https://mapp-03\.hnheibaidian\.com/user/content/course/menu/list/condition-course-id\?courseId=\d+ url script-request-header https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/unified_script.js
+
 [mitm]
 hostname = mapp-03.hnheibaidian.com
 

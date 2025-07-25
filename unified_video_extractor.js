@@ -3,14 +3,35 @@
 // 处理两个接口：课程列表缓存 + 视频链接提取
 // ===============================
 
+// 首先输出基本信息确认脚本运行
 const scriptName = "视频提取器";
+console.log(`=================== ${scriptName} 开始执行 ===================`);
+
+// 检查环境
+if (typeof $request !== 'undefined') {
+    console.log(`${scriptName}: $request可用`);
+    console.log(`${scriptName}: URL = ${$request.url}`);
+} else {
+    console.log(`${scriptName}: ERROR - $request不可用`);
+}
+
+if (typeof $response !== 'undefined') {
+    console.log(`${scriptName}: $response可用`);
+} else {
+    console.log(`${scriptName}: $response不可用（请求阶段正常）`);
+}
+
+// 立即发送测试通知
+$notify(`${scriptName} - 测试`, "脚本已触发", `时间: ${new Date().toLocaleTimeString()}`);
+
 const url = $request.url;
 
 // 判断是哪个接口
 const isCourseListAPI = url.includes('/user/content/course/page');
 const isCourseDetailAPI = url.includes('/user/content/course/menu/list/condition-course-id');
 
-console.log(`${scriptName}: 检测到接口类型 - 列表:${isCourseListAPI}, 详情:${isCourseDetailAPI}`);
+console.log(`${scriptName}: 完整URL: ${url}`);
+console.log(`${scriptName}: 接口类型判断 - 课程列表:${isCourseListAPI}, 课程详情:${isCourseDetailAPI}`);
 
 if (isCourseListAPI) {
     // ===============================

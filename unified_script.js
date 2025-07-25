@@ -5,7 +5,7 @@ QuantumultX 配置
 
 [rewrite_local]
 # 统一脚本处理两个接口
-^https://mapp-03\.hnheibaidian\.com/user/content/course/page\?.*$ url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/unified_script.js
+^https://mapp-03\.hnheibaidian\.com/user/content/course\?courseId=\d+ url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/unified_script.js
 ^https://mapp-03\.hnheibaidian\.com/user/content/course/menu/list/condition-course-id\?courseId=\d+ url script-request-header https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/unified_script.js
 
 [mitm]
@@ -42,7 +42,7 @@ console.log(`=================== ${scriptName} 开始执行 ===================`
 console.log(`${scriptName}: URL = ${url}`);
 
 // 判断接口类型
-const isCourseListAPI = url.includes('/user/content/course/page');
+const isCourseListAPI = url.includes('/user/content/course?courseId=');
 const isCourseDetailAPI = url.includes('/user/content/course/menu/list/condition-course-id');
 
 console.log(`${scriptName}: 接口判断 - 课程列表:${isCourseListAPI}, 课程详情:${isCourseDetailAPI}`);

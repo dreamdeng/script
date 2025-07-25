@@ -1,3 +1,14 @@
+/*
+
+[rewrite_local]
+# 统一处理两个接口
+^https://mapp-03\.hnheibaidian\.com/user/content/course/page\?.*$ url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/course_video_extractor.js
+^https://mapp-03\.hnheibaidian\.com/user/content/course/menu/list/condition-course-id\?courseId=\d+ url script-request-header https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/video-extractor.js
+[mitm]
+hostname = mapp-03.hnheibaidian.com
+
+*/
+
 // ===============================
 // 统一视频提取脚本 (unified_script.js)
 // 根据接口类型自动处理：课程缓存 + 视频提取

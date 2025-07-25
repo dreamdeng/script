@@ -116,8 +116,26 @@ if (isCourseListAPI) {
             }
         });
         
-        // 存储缓存
-        $persistentStore.write(JSON.stringify(courseData), "courseVideoCache");
+        // 存储缓存 - 使用多种方式确保兼容性
+        try {
+            if (typeof $persistentStore !== 'undefined') {
+                $persistentStore.write(JSON.stringify(courseData), "courseVideoCache");
+                console.log(`${scriptName}: 使用$persistentStore存储成功`);
+            } else if (typeof $prefs !== 'undefined') {
+                $prefs.setValueForKey(JSON.stringify(courseData), "courseVideoCache");
+                console.log(`${scriptName}: 使用$prefs存储成功`);
+            } else {
+                // 使用全局变量作为备选方案
+                if (typeof window !== 'undefined') {
+                    window.courseVideoCache = courseData;
+                } else {
+                    global.courseVideoCache = courseData;
+                }
+                console.log(`${scriptName}: 使用全局变量存储成功`);
+            }
+        } catch (e) {
+            console.log(`${scriptName}: 存储失败 - ${e}`);
+        }
         
         let totalCourses = Object.keys(courseData).length;
         
@@ -149,8 +167,28 @@ if (isCourseListAPI) {
     console.log(`${scriptName}: 目标课程ID: ${targetCourseId}`);
     
     if (targetCourseId) {
-        // 读取缓存
-        let cachedData = $persistentStore.read("courseVideoCache");
+        // 读取缓存 - 使用多种方式确保兼容性
+        let cachedData = null;
+        
+        try {
+            if (typeof $persistentStore !== 'undefined') {
+                cachedData = $persistentStore.read("courseVideoCache");
+                console.log(`${scriptName}: 使用$persistentStore读取`);
+            } else if (typeof $prefs !== 'undefined') {
+                cachedData = $prefs.valueForKey("courseVideoCache");
+                console.log(`${scriptName}: 使用$prefs读取`);
+            } else {
+                // 使用全局变量作为备选方案
+                if (typeof window !== 'undefined' && window.courseVideoCache) {
+                    cachedData = JSON.stringify(window.courseVideoCache);
+                } else if (typeof global !== 'undefined' && global.courseVideoCache) {
+                    cachedData = JSON.stringify(global.courseVideoCache);
+                }
+                console.log(`${scriptName}: 使用全局变量读取`);
+            }
+        } catch (e) {
+            console.log(`${scriptName}: 读取缓存失败 - ${e}`);
+        }
         
         if (cachedData) {
             try {

@@ -141,28 +141,16 @@ if (obj && obj.record && obj.record.chapters) {
                 let seconds = duration % 60;
                 let timeDisplay = minutes > 0 ? `${minutes}分${seconds}秒` : `${seconds}秒`;
                 
-                // 确保视频URL是完整有效的链接
-                let notificationUrl = "";
-                if (video.videoUrl && video.videoUrl.startsWith('http')) {
-                    notificationUrl = video.videoUrl;
-                } else if (video.videoUrl && !video.videoUrl.startsWith('http')) {
-                    // 如果URL不完整，尝试补全
-                    notificationUrl = `https://${video.videoUrl}`;
-                } else {
-                    // 如果URL无效，使用空字符串（通知不可点击）
-                    notificationUrl = "";
-                }
-                
-                console.log(`${scriptName}: 视频${index + 1} URL检查: ${video.videoUrl} -> ${notificationUrl}`);
+                console.log(`${scriptName}: 视频${index + 1} URL: ${video.videoUrl}`);
                 
                 $notify(
                     `📺 [${index + 1}/${videoList.length}] ${video.title}`,
-                    `课程${courseId} | ${timeDisplay} | ¥${price}\n🎬 ${notificationUrl ? '点击观看视频' : '视频链接无效'}`,
-                    notificationUrl
+                    `课程${courseId} | ${timeDisplay} | ¥${price}`,
+                    "🎬 点击此通知在浏览器中观看视频",
+                    { "open-url": video.videoUrl }
                 );
                 
                 console.log(`${scriptName}: 发送通知 [${index + 1}] ${video.title}`);
-                console.log(`${scriptName}: 通知URL: ${notificationUrl}`);
             }, index * 800); // 每个通知间隔800ms
         });
         
@@ -174,8 +162,8 @@ if (obj && obj.record && obj.record.chapters) {
             
             $notify(
                 `📊 课程${courseId} 视频汇总`,
-                `共${videoList.length}个视频 | ${totalMinutes}分钟`,
-                `总价值: ¥${(totalPrice/100).toFixed(2)} | 已全部展示完毕`
+                `共${videoList.length}个视频 | ${totalMinutes}分钟 | 总价值: ¥${(totalPrice/100).toFixed(2)}`,
+                "已全部展示完毕，请查看上方通知"
             );
             
             console.log(`${scriptName}: 汇总信息 - ${videoList.length}个视频，${totalMinutes}分钟，¥${(totalPrice/100).toFixed(2)}`);

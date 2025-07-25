@@ -4,9 +4,8 @@ QuantumultX 配置
 ===============================
 
 [rewrite_local]
-# 统一脚本处理两个接口
+# 课程视频直接提取
 ^https://mapp-03\.hnheibaidian\.com/user/content/course\?courseId=\d+ url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/unified_script.js
-^https://mapp-03\.hnheibaidian\.com/user/content/course/menu/list/condition-course-id\?courseId=\d+ url script-request-header https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/unified_script.js
 
 [mitm]
 hostname = mapp-03.hnheibaidian.com
@@ -14,250 +13,156 @@ hostname = mapp-03.hnheibaidian.com
 ===============================
 使用说明
 ===============================
-1. 访问课程列表页面 → 自动缓存所有课程视频数据
-2. 点击任意课程 → 立即从缓存匹配并弹窗视频链接  
-3. 点击通知 → 浏览器打开视频
+1. 访问任意课程页面（带courseId参数）
+2. 自动解析并弹出该课程的所有视频链接
+3. 点击通知直接观看视频
 
 ===============================
 功能特性
 ===============================
-✅ 单脚本处理两个接口
-✅ 自动识别接口类型  
-✅ 持久化数据缓存
-✅ 丰富的视频信息（时长、价格）
+✅ 单接口处理，无需缓存
+✅ 自动解析课程视频
+✅ 列表式通知展示
 ✅ 点击通知直接观看
-✅ 详细的调试日志
+✅ 显示视频详情（时长、价格）
+✅ 简化的调试日志
 
 */
 
 // ===============================
-// 统一视频提取脚本 (unified_script.js)
-// 根据接口类型自动处理：课程缓存 + 视频提取
+// 课程视频直接提取脚本 (unified_script.js)
+// 直接解析课程接口并弹出所有视频
 // ===============================
 
-const scriptName = "统一视频提取器";
+const scriptName = "课程视频提取器";
 const url = $request.url;
 
 console.log(`=================== ${scriptName} 开始执行 ===================`);
 console.log(`${scriptName}: URL = ${url}`);
 
-// 判断接口类型
-const isCourseListAPI = url.includes('/user/content/course?courseId=');
-const isCourseDetailAPI = url.includes('/user/content/course/menu/list/condition-course-id');
+// 立即发送测试通知
+$notify(`${scriptName}`, "脚本触发", "开始解析课程视频...");
 
-console.log(`${scriptName}: 接口判断 - 课程列表:${isCourseListAPI}, 课程详情:${isCourseDetailAPI}`);
+// 从URL提取courseId
+let courseIdMatch = url.match(/courseId=(\d+)/);
+let courseId = courseIdMatch ? courseIdMatch[1] : "未知";
 
-if (isCourseListAPI) {
-    // ===============================
-    // 处理课程列表接口 - 数据缓存功能
-    // ===============================
+console.log(`${scriptName}: 课程ID: ${courseId}`);
+
+// 获取并解析响应数据
+let body = $response.body;
+let obj;
+
+try {
+    obj = JSON.parse(body);
+    console.log(`${scriptName}: JSON解析成功`);
+} catch (e) {
+    console.log(`${scriptName}: JSON解析失败 - ${e}`);
+    $notify(`${scriptName}`, "解析失败 ❌", "响应数据不是有效的JSON格式");
+    $done({});
+}
+
+// 检查数据结构并提取视频
+if (obj && obj.record && obj.record.chapters) {
+    let chapters = obj.record.chapters;
+    console.log(`${scriptName}: 找到 ${chapters.length} 个章节`);
     
-    console.log(`${scriptName}: 执行课程列表缓存逻辑`);
-    $notify(`${scriptName}`, "课程列表处理", "开始缓存课程数据...");
+    let videoList = [];
     
-    let body = $response.body;
-    let obj;
-    
-    try {
-        obj = JSON.parse(body);
-        console.log(`${scriptName}: 课程列表JSON解析成功`);
-    } catch (e) {
-        console.log(`${scriptName}: 课程列表JSON解析失败 - ${e}`);
-        $notify(`${scriptName}`, "解析失败", "课程列表数据格式错误");
-        $done({});
-    }
-    
-    // 检查数据结构
-    if (obj && obj.record && obj.record.chapters) {
-        let chapters = obj.record.chapters;
-        console.log(`${scriptName}: 找到 ${chapters.length} 个章节`);
-        
-        // 按课程ID分组存储视频数据
-        let courseData = {};
-        let totalVideos = 0;
-        
-        chapters.forEach((chapter, index) => {
-            let courseId = chapter.courseId;
+    // 遍历所有章节，提取视频信息
+    chapters.forEach((chapter, index) => {
+        if (chapter.knowledge && chapter.knowledge.videoResourceUrl) {
+            let videoUrl = chapter.knowledge.videoResourceUrl;
             
-            if (!courseData[courseId]) {
-                courseData[courseId] = [];
-            }
-            
-            // 检查视频数据
-            if (chapter.knowledge && chapter.knowledge.videoResourceUrl) {
-                let videoUrl = chapter.knowledge.videoResourceUrl;
+            // 验证视频URL有效性
+            if (videoUrl && 
+                videoUrl !== "https://oss-resources.hnheibaidian.com/file/video/" &&
+                !videoUrl.endsWith("/file/video/") &&
+                videoUrl.length > 50) {
                 
-                // 验证视频URL
-                if (videoUrl && 
-                    videoUrl !== "https://oss-resources.hnheibaidian.com/file/video/" &&
-                    !videoUrl.endsWith("/file/video/") &&
-                    videoUrl.length > 50) {
-                    
-                    courseData[courseId].push({
-                        title: chapter.knowledge.title || `章节${index + 1}`,
-                        videoUrl: videoUrl,
-                        chapterId: chapter.id,
-                        knowledgeId: chapter.knowledgeId,
-                        index: index + 1,
-                        videoTimeSeconds: chapter.knowledge.videoTimeSeconds || 0,
-                        price: chapter.knowledge.price || 0
-                    });
-                    
-                    totalVideos++;
-                    console.log(`${scriptName}: 课程${courseId} - ${chapter.knowledge.title}`);
-                }
+                videoList.push({
+                    title: chapter.knowledge.title || `章节${index + 1}`,
+                    videoUrl: videoUrl,
+                    chapterId: chapter.id,
+                    knowledgeId: chapter.knowledgeId,
+                    videoTimeSeconds: chapter.knowledge.videoTimeSeconds || 0,
+                    price: chapter.knowledge.price || 0,
+                    index: index + 1
+                });
+                
+                console.log(`${scriptName}: 找到视频 - ${chapter.knowledge.title}`);
             }
-        });
-        
-        // 清理空课程
-        Object.keys(courseData).forEach(courseId => {
-            if (courseData[courseId].length === 0) {
-                delete courseData[courseId];
-            }
-        });
-        
-        // 存储缓存 - 使用多种方式确保兼容性
-        try {
-            if (typeof $persistentStore !== 'undefined') {
-                $persistentStore.write(JSON.stringify(courseData), "courseVideoCache");
-                console.log(`${scriptName}: 使用$persistentStore存储成功`);
-            } else if (typeof $prefs !== 'undefined') {
-                $prefs.setValueForKey(JSON.stringify(courseData), "courseVideoCache");
-                console.log(`${scriptName}: 使用$prefs存储成功`);
-            } else {
-                // 使用全局变量作为备选方案
-                if (typeof window !== 'undefined') {
-                    window.courseVideoCache = courseData;
-                } else {
-                    global.courseVideoCache = courseData;
-                }
-                console.log(`${scriptName}: 使用全局变量存储成功`);
-            }
-        } catch (e) {
-            console.log(`${scriptName}: 存储失败 - ${e}`);
         }
+    });
+    
+    console.log(`${scriptName}: 总共提取到 ${videoList.length} 个视频`);
+    
+    if (videoList.length > 0) {
+        // 发送视频列表通知
+        videoList.forEach((video, index) => {
+            setTimeout(() => {
+                let duration = Math.round(video.videoTimeSeconds);
+                let price = (video.price / 100).toFixed(2);
+                let minutes = Math.floor(duration / 60);
+                let seconds = duration % 60;
+                let timeDisplay = minutes > 0 ? `${minutes}分${seconds}秒` : `${seconds}秒`;
+                
+                $notify(
+                    `📺 [${index + 1}/${videoList.length}] ${video.title}`,
+                    `课程${courseId} | ${timeDisplay} | ¥${price}\n🎬 点击观看视频`,
+                    video.videoUrl
+                );
+                
+                console.log(`${scriptName}: 发送通知 [${index + 1}] ${video.title} - ${video.videoUrl}`);
+            }, index * 800); // 每个通知间隔800ms
+        });
         
-        let totalCourses = Object.keys(courseData).length;
+        // 发送汇总通知
+        setTimeout(() => {
+            let totalDuration = videoList.reduce((sum, v) => sum + (v.videoTimeSeconds || 0), 0);
+            let totalPrice = videoList.reduce((sum, v) => sum + (v.price || 0), 0);
+            let totalMinutes = Math.round(totalDuration / 60);
+            
+            $notify(
+                `📊 课程${courseId} 视频汇总`,
+                `共${videoList.length}个视频 | ${totalMinutes}分钟`,
+                `总价值: ¥${(totalPrice/100).toFixed(2)} | 已全部展示完毕`
+            );
+            
+            console.log(`${scriptName}: 汇总信息 - ${videoList.length}个视频，${totalMinutes}分钟，¥${(totalPrice/100).toFixed(2)}`);
+        }, videoList.length * 800 + 1000);
         
-        console.log(`${scriptName}: 缓存完成 - ${totalCourses}个课程，${totalVideos}个视频`);
+        // 详细控制台输出
+        console.log(`${scriptName}: ========== 视频列表详情 ==========`);
+        videoList.forEach((video, index) => {
+            console.log(`[${index + 1}] ${video.title}`);
+            console.log(`    🔗 链接: ${video.videoUrl}`);
+            console.log(`    ⏱️ 时长: ${Math.round(video.videoTimeSeconds)}秒`);
+            console.log(`    💰 价格: ¥${(video.price/100).toFixed(2)}`);
+            console.log(`    📋 章节ID: ${video.chapterId}`);
+            console.log(`    🔍 知识点ID: ${video.knowledgeId}`);
+        });
         
+    } else {
+        console.log(`${scriptName}: 课程${courseId}中没有找到有效视频`);
         $notify(
-            `${scriptName} ✅`,
-            `缓存完成`,
-            `${totalCourses}个课程 | ${totalVideos}个视频`
+            `${scriptName}`,
+            `课程${courseId} 无视频 📭`,
+            "该课程没有可播放的视频内容"
         );
-        
-    } else {
-        console.log(`${scriptName}: 课程列表数据结构异常`);
-        $notify(`${scriptName}`, "数据异常", "未找到预期的课程章节数据");
-    }
-    
-} else if (isCourseDetailAPI) {
-    // ===============================
-    // 处理课程详情接口 - 视频提取功能
-    // ===============================
-    
-    console.log(`${scriptName}: 执行视频提取逻辑`);
-    $notify(`${scriptName}`, "课程详情处理", "开始提取视频链接...");
-    
-    // 提取courseId
-    let courseIdMatch = url.match(/courseId=(\d+)/);
-    let targetCourseId = courseIdMatch ? courseIdMatch[1] : null;
-    
-    console.log(`${scriptName}: 目标课程ID: ${targetCourseId}`);
-    
-    if (targetCourseId) {
-        // 读取缓存 - 使用多种方式确保兼容性
-        let cachedData = null;
-        
-        try {
-            if (typeof $persistentStore !== 'undefined') {
-                cachedData = $persistentStore.read("courseVideoCache");
-                console.log(`${scriptName}: 使用$persistentStore读取`);
-            } else if (typeof $prefs !== 'undefined') {
-                cachedData = $prefs.valueForKey("courseVideoCache");
-                console.log(`${scriptName}: 使用$prefs读取`);
-            } else {
-                // 使用全局变量作为备选方案
-                if (typeof window !== 'undefined' && window.courseVideoCache) {
-                    cachedData = JSON.stringify(window.courseVideoCache);
-                } else if (typeof global !== 'undefined' && global.courseVideoCache) {
-                    cachedData = JSON.stringify(global.courseVideoCache);
-                }
-                console.log(`${scriptName}: 使用全局变量读取`);
-            }
-        } catch (e) {
-            console.log(`${scriptName}: 读取缓存失败 - ${e}`);
-        }
-        
-        if (cachedData) {
-            try {
-                let courseData = JSON.parse(cachedData);
-                console.log(`${scriptName}: 缓存读取成功`);
-                
-                if (courseData[targetCourseId]) {
-                    let videos = courseData[targetCourseId];
-                    
-                    console.log(`${scriptName}: 找到课程${targetCourseId}的${videos.length}个视频`);
-                    
-                    if (videos.length > 0) {
-                        // 发送视频通知
-                        videos.forEach((video, index) => {
-                            setTimeout(() => {
-                                let duration = Math.round(video.videoTimeSeconds);
-                                let price = (video.price / 100).toFixed(2);
-                                
-                                $notify(
-                                    `📺 ${video.title}`,
-                                    `课程${targetCourseId} | ${duration}秒 | ¥${price}\n🎬 点击观看`,
-                                    video.videoUrl
-                                );
-                            }, index * 1000);
-                        });
-                        
-                        // 汇总通知
-                        setTimeout(() => {
-                            let totalDuration = videos.reduce((sum, v) => sum + (v.videoTimeSeconds || 0), 0);
-                            let minutes = Math.round(totalDuration / 60);
-                            
-                            $notify(
-                                `📊 课程${targetCourseId}汇总`,
-                                `${videos.length}个视频 | ${minutes}分钟`,
-                                "点击上方通知观看视频"
-                            );
-                        }, videos.length * 1000 + 500);
-                        
-                    } else {
-                        $notify(`${scriptName}`, `课程${targetCourseId}`, "该课程暂无视频内容");
-                    }
-                    
-                } else {
-                    let availableCourses = Object.keys(courseData);
-                    console.log(`${scriptName}: 可用课程: ${availableCourses.join(', ')}`);
-                    
-                    $notify(
-                        `${scriptName}`,
-                        `课程${targetCourseId}未找到`,
-                        `缓存中有: ${availableCourses.slice(0,2).join(',')}`
-                    );
-                }
-                
-            } catch (e) {
-                console.log(`${scriptName}: 缓存解析失败 - ${e}`);
-                $notify(`${scriptName}`, "缓存错误", "请重新访问课程列表");
-            }
-        } else {
-            console.log(`${scriptName}: 无缓存数据`);
-            $notify(`${scriptName}`, "无缓存数据", "请先访问课程列表页面");
-        }
-    } else {
-        console.log(`${scriptName}: 未找到courseId`);
-        $notify(`${scriptName}`, "参数错误", "URL中缺少courseId");
     }
     
 } else {
-    console.log(`${scriptName}: 接口类型未匹配`);
-    $notify(`${scriptName}`, "接口未识别", "当前URL不在处理范围内");
+    console.log(`${scriptName}: 数据结构异常`);
+    console.log(`${scriptName}: obj存在: ${!!obj}`);
+    console.log(`${scriptName}: obj.record存在: ${!!(obj && obj.record)}`);
+    console.log(`${scriptName}: obj.record.chapters存在: ${!!(obj && obj.record && obj.record.chapters)}`);
+    
+    $notify(
+        `${scriptName}`,
+        "数据结构错误 ⚠️",
+        "响应中未找到预期的chapters数据"
+    );
 }
 
 console.log(`=================== ${scriptName} 执行完成 ===================`);

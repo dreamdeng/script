@@ -34,14 +34,48 @@ hostname = mapp-03.hnheibaidian.com
 // 直接解析课程接口并弹出所有视频
 // ===============================
 
+// 立即输出调试信息
+console.log("========== 脚本开始执行 ==========");
+console.log("当前时间: " + new Date().toLocaleString());
+
+// 检查环境变量
+console.log("$request 可用: " + (typeof $request !== 'undefined'));
+console.log("$response 可用: " + (typeof $response !== 'undefined'));
+console.log("$notify 可用: " + (typeof $notify !== 'undefined'));
+
+// 立即发送测试通知确认脚本运行
+$notify("脚本启动测试", "QuantumultX脚本", "如果看到这个通知，说明脚本已触发");
+
 const scriptName = "课程视频提取器";
+
+// 检查$request是否可用
+if (typeof $request === 'undefined') {
+    console.log("错误: $request 未定义");
+    $notify("脚本错误", "$request未定义", "请检查QuantumultX配置");
+    $done({});
+}
+
 const url = $request.url;
+console.log(`${scriptName}: 请求URL = ${url}`);
 
-console.log(`=================== ${scriptName} 开始执行 ===================`);
-console.log(`${scriptName}: URL = ${url}`);
+// 检查URL是否匹配
+const urlMatch = url.includes('/user/content/course?courseId=');
+console.log(`${scriptName}: URL匹配结果 = ${urlMatch}`);
 
-// 立即发送测试通知
-$notify(`${scriptName}`, "脚本触发", "开始解析课程视频...");
+if (!urlMatch) {
+    console.log(`${scriptName}: URL不匹配，退出执行`);
+    $notify(`${scriptName}`, "URL不匹配", `当前URL: ${url.substring(0, 50)}...`);
+    $done({});
+}
+
+// 检查$response是否可用
+if (typeof $response === 'undefined') {
+    console.log("错误: $response 未定义");
+    $notify("脚本错误", "$response未定义", "请检查重写规则类型");
+    $done({});
+}
+
+console.log(`${scriptName}: 开始处理响应数据`);
 
 // 从URL提取courseId
 let courseIdMatch = url.match(/courseId=(\d+)/);
@@ -107,13 +141,28 @@ if (obj && obj.record && obj.record.chapters) {
                 let seconds = duration % 60;
                 let timeDisplay = minutes > 0 ? `${minutes}分${seconds}秒` : `${seconds}秒`;
                 
+                // 确保视频URL是完整有效的链接
+                let notificationUrl = "";
+                if (video.videoUrl && video.videoUrl.startsWith('http')) {
+                    notificationUrl = video.videoUrl;
+                } else if (video.videoUrl && !video.videoUrl.startsWith('http')) {
+                    // 如果URL不完整，尝试补全
+                    notificationUrl = `https://${video.videoUrl}`;
+                } else {
+                    // 如果URL无效，使用空字符串（通知不可点击）
+                    notificationUrl = "";
+                }
+                
+                console.log(`${scriptName}: 视频${index + 1} URL检查: ${video.videoUrl} -> ${notificationUrl}`);
+                
                 $notify(
                     `📺 [${index + 1}/${videoList.length}] ${video.title}`,
-                    `课程${courseId} | ${timeDisplay} | ¥${price}\n🎬 点击观看视频`,
-                    video.videoUrl
+                    `课程${courseId} | ${timeDisplay} | ¥${price}\n🎬 ${notificationUrl ? '点击观看视频' : '视频链接无效'}`,
+                    notificationUrl
                 );
                 
-                console.log(`${scriptName}: 发送通知 [${index + 1}] ${video.title} - ${video.videoUrl}`);
+                console.log(`${scriptName}: 发送通知 [${index + 1}] ${video.title}`);
+                console.log(`${scriptName}: 通知URL: ${notificationUrl}`);
             }, index * 800); // 每个通知间隔800ms
         });
         

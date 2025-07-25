@@ -183,42 +183,26 @@ if (obj && obj.record && obj.record.chapters) {
     );
     
     if (videoList.length > 0) {
-        // 发送视频列表通知
+        // 简化的视频通知 - 直接发送，不用延迟
         videoList.forEach((video, index) => {
-            setTimeout(() => {
-                let duration = Math.round(video.videoTimeSeconds);
-                let price = (video.price / 100).toFixed(2);
-                let minutes = Math.floor(duration / 60);
-                let seconds = duration % 60;
-                let timeDisplay = minutes > 0 ? `${minutes}分${seconds}秒` : `${seconds}秒`;
-                
-                console.log(`${scriptName}: 视频${index + 1} URL: ${video.videoUrl}`);
-                
-                $notify(
-                    `📺 [${index + 1}/${videoList.length}] ${video.title}`,
-                    `课程${courseId} | ${timeDisplay} | ¥${price}`,
-                    "🎬 点击此通知在浏览器中观看视频",
-                    { "open-url": video.videoUrl }
-                );
-                
-                console.log(`${scriptName}: 发送通知 [${index + 1}] ${video.title}`);
-            }, index * 800); // 每个通知间隔800ms
-        });
-        
-        // 发送汇总通知
-        setTimeout(() => {
-            let totalDuration = videoList.reduce((sum, v) => sum + (v.videoTimeSeconds || 0), 0);
-            let totalPrice = videoList.reduce((sum, v) => sum + (v.price || 0), 0);
-            let totalMinutes = Math.round(totalDuration / 60);
-            
             $notify(
-                `📊 课程${courseId} 视频汇总`,
-                `共${videoList.length}个视频 | ${totalMinutes}分钟 | 总价值: ¥${(totalPrice/100).toFixed(2)}`,
-                "已全部展示完毕，请查看上方通知"
+                `📺 ${video.title}`,
+                `课程${courseId} - 视频${index + 1}`,
+                "点击观看",
+                { "open-url": video.videoUrl }
             );
             
-            console.log(`${scriptName}: 汇总信息 - ${videoList.length}个视频，${totalMinutes}分钟，¥${(totalPrice/100).toFixed(2)}`);
-        }, videoList.length * 800 + 1000);
+            console.log(`${scriptName}: 发送通知 [${index + 1}] ${video.title}`);
+        });
+        
+        // 简化的汇总通知
+        $notify(
+            `📊 课程${courseId}`,
+            `共找到${videoList.length}个视频`,
+            "所有视频通知已发送"
+        );
+        
+        console.log(`${scriptName}: 汇总 - 共${videoList.length}个视频`);
         
         // 详细控制台输出
         console.log(`${scriptName}: ========== 视频列表详情 ==========`);
@@ -235,7 +219,7 @@ if (obj && obj.record && obj.record.chapters) {
         console.log(`${scriptName}: 课程${courseId}中没有找到有效视频`);
         $notify(
             `${scriptName}`,
-            `课程${courseId} 无视频 📭`,
+            `课程${courseId} 无视频`,
             "该课程没有可播放的视频内容"
         );
     }

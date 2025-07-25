@@ -85,51 +85,102 @@ console.log(`${scriptName}: 课程ID: ${courseId}`);
 
 // 获取并解析响应数据
 let body = $response.body;
+console.log(`${scriptName}: 响应体长度: ${body ? body.length : 0}`);
+console.log(`${scriptName}: 响应体前200字符: ${body ? body.substring(0, 200) : 'null'}`);
+
 let obj;
 
 try {
     obj = JSON.parse(body);
     console.log(`${scriptName}: JSON解析成功`);
+    $notify(`${scriptName}`, "JSON解析成功", "开始检查数据结构...");
 } catch (e) {
     console.log(`${scriptName}: JSON解析失败 - ${e}`);
-    $notify(`${scriptName}`, "解析失败 ❌", "响应数据不是有效的JSON格式");
+    $notify(`${scriptName}`, "解析失败 ❌", `JSON错误: ${e.message}`);
     $done({});
 }
+
+// 检查数据结构
+console.log(`${scriptName}: obj存在: ${!!obj}`);
+if (obj) {
+    console.log(`${scriptName}: obj.record存在: ${!!obj.record}`);
+    if (obj.record) {
+        console.log(`${scriptName}: obj.record.chapters存在: ${!!obj.record.chapters}`);
+        if (obj.record.chapters) {
+            console.log(`${scriptName}: chapters数组长度: ${obj.record.chapters.length}`);
+        } else {
+            console.log(`${scriptName}: obj.record的键: ${Object.keys(obj.record)}`);
+        }
+    } else {
+        console.log(`${scriptName}: obj的键: ${Object.keys(obj)}`);
+    }
+}
+
+// 发送数据结构检查通知
+$notify(
+    `${scriptName} - 数据检查`,
+    `obj: ${!!obj} | record: ${!!(obj && obj.record)} | chapters: ${!!(obj && obj.record && obj.record.chapters)}`,
+    obj && obj.record && obj.record.chapters ? `找到${obj.record.chapters.length}个章节` : "数据结构异常"
+);
 
 // 检查数据结构并提取视频
 if (obj && obj.record && obj.record.chapters) {
     let chapters = obj.record.chapters;
-    console.log(`${scriptName}: 找到 ${chapters.length} 个章节`);
+    console.log(`${scriptName}: 开始遍历 ${chapters.length} 个章节`);
+    
+    $notify(`${scriptName}`, "开始解析章节", `共${chapters.length}个章节数据`);
     
     let videoList = [];
     
     // 遍历所有章节，提取视频信息
     chapters.forEach((chapter, index) => {
-        if (chapter.knowledge && chapter.knowledge.videoResourceUrl) {
-            let videoUrl = chapter.knowledge.videoResourceUrl;
-            
-            // 验证视频URL有效性
-            if (videoUrl && 
-                videoUrl !== "https://oss-resources.hnheibaidian.com/file/video/" &&
-                !videoUrl.endsWith("/file/video/") &&
-                videoUrl.length > 50) {
+        console.log(`${scriptName}: 检查章节${index + 1}: ${JSON.stringify(chapter).substring(0, 100)}...`);
+        
+        if (chapter.knowledge) {
+            console.log(`${scriptName}: 章节${index + 1}有knowledge数据`);
+            if (chapter.knowledge.videoResourceUrl) {
+                console.log(`${scriptName}: 章节${index + 1}有videoResourceUrl: ${chapter.knowledge.videoResourceUrl}`);
                 
-                videoList.push({
-                    title: chapter.knowledge.title || `章节${index + 1}`,
-                    videoUrl: videoUrl,
-                    chapterId: chapter.id,
-                    knowledgeId: chapter.knowledgeId,
-                    videoTimeSeconds: chapter.knowledge.videoTimeSeconds || 0,
-                    price: chapter.knowledge.price || 0,
-                    index: index + 1
-                });
+                let videoUrl = chapter.knowledge.videoResourceUrl;
                 
-                console.log(`${scriptName}: 找到视频 - ${chapter.knowledge.title}`);
+                // 验证视频URL有效性
+                if (videoUrl && 
+                    videoUrl !== "https://oss-resources.hnheibaidian.com/file/video/" &&
+                    !videoUrl.endsWith("/file/video/") &&
+                    videoUrl.length > 50) {
+                    
+                    console.log(`${scriptName}: 章节${index + 1}视频URL有效，添加到列表`);
+                    
+                    videoList.push({
+                        title: chapter.knowledge.title || `章节${index + 1}`,
+                        videoUrl: videoUrl,
+                        chapterId: chapter.id,
+                        knowledgeId: chapter.knowledgeId,
+                        videoTimeSeconds: chapter.knowledge.videoTimeSeconds || 0,
+                        price: chapter.knowledge.price || 0,
+                        index: index + 1
+                    });
+                    
+                    console.log(`${scriptName}: 添加视频 - ${chapter.knowledge.title}`);
+                } else {
+                    console.log(`${scriptName}: 章节${index + 1}视频URL无效: 长度${videoUrl ? videoUrl.length : 0}, 内容: ${videoUrl}`);
+                }
+            } else {
+                console.log(`${scriptName}: 章节${index + 1}没有videoResourceUrl`);
             }
+        } else {
+            console.log(`${scriptName}: 章节${index + 1}没有knowledge数据`);
         }
     });
     
-    console.log(`${scriptName}: 总共提取到 ${videoList.length} 个视频`);
+    console.log(`${scriptName}: 遍历完成，总共提取到 ${videoList.length} 个有效视频`);
+    
+    // 发送视频提取结果通知
+    $notify(
+        `${scriptName} - 提取结果`, 
+        `从${chapters.length}个章节中提取到${videoList.length}个视频`,
+        videoList.length > 0 ? "准备发送视频通知..." : "未找到有效视频"
+    );
     
     if (videoList.length > 0) {
         // 发送视频列表通知

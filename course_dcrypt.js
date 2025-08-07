@@ -1,9 +1,13 @@
 /*
 [rewrite_local]
+# 匹配原始的 courseInfo 接口
 ^https:\/\/zs\.mifxcx\.com\/public\/index\.php\/api\/app\/courseInfo url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/course_dcrypt.js
+# 新增兼容 courseList 接口
+^https:\/\/qy\.ps7\.cc\/public\/index\.php\/api\/app\/courseList url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/course_dcrypt.js
 
 [mitm]
-hostname = zs.mifxcx.com
+# 在原有 hostname 基础上，增加了新的域名
+hostname = zs.mifxcx.com, qy.ps7.cc
 */
 
 const url = $request.url;

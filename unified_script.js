@@ -5,10 +5,10 @@ QuantumultX 配置
 
 [rewrite_local]
 # 课程视频直接提取
-^https://mapp-03\.hnheibaidian\.com/user/content/course\?courseId=\d+ url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/unified_script.js
+^https://*\.hnheibaidian\.com/user/content/course\?courseId=\d+ url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/unified_script.js
 
 [mitm]
-hostname = mapp-03.hnheibaidian.com
+hostname = mapp-03.hnheibaidian.com,mapp-02.hnheibaidian.com
 
 ===============================
 使用说明

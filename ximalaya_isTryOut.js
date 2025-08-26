@@ -1,12 +1,12 @@
 /**
- * QuantumultX 脚本 - 喜马拉雅 isTryOut 字段修改
- * 作用：将 https://xxm.ximalaya.com 域名下所有接口返回的 isTryOut 值改为 true
+ * QuantumultX 配置文件添加以下内容：
  * 
- * 使用方法：
- * 1. 将此脚本保存到 QuantumultX 的脚本目录
- * 2. 在配置文件中添加重写规则（见下方配置）
+ * [rewrite_local]
+ * ^https://xxm\.ximalaya\.com/.* url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/ximalaya_isTryOut.js
+ * 
+ * [mitm]
+ * hostname = xxm.ximalaya.com
  */
-
 // 获取响应体
 let body = $response.body;
 
@@ -48,19 +48,3 @@ try {
     // 发生错误时返回原始响应
     $done({});
 }
-
-/**
- * QuantumultX 配置文件添加以下内容：
- * 
- * [rewrite_local]
- * ^https://xxm\.ximalaya\.com/.* url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/ximalaya_isTryOut.js
- * 
- * [mitm]
- * hostname = xxm.ximalaya.com
- * 
- * 注意事项：
- * 1. 脚本文件名需要与配置中的文件名一致（如：ximalaya_isTryOut.js）
- * 2. 需要开启 MITM 功能
- * 3. 确保已信任 QuantumultX 的证书
- * 4. 如果不生效，检查脚本路径和配置是否正确
- */

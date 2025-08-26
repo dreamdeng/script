@@ -53,7 +53,7 @@ try {
  * QuantumultX 配置文件添加以下内容：
  * 
  * [rewrite_local]
- * ^https://xxm\.ximalaya\.com/.* url script-response-body ximalaya_isTryOut.js
+ * ^https://xxm\.ximalaya\.com/.* url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/ximalaya_isTryOut.js
  * 
  * [mitm]
  * hostname = xxm.ximalaya.com

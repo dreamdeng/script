@@ -4,9 +4,9 @@
  */
 /*
 [rewrite_local]
-^https?://.*ximalaya.*\.com/.* url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/ximalaya_isTryOut.js
+^https?://(xxm|mpay)\.ximalaya\.com/.* url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/ximalaya_isTryOut.js
 [mitm] 
-hostname = xxm.ximalaya.com
+hostname = xxm.ximalaya.com, mpay.ximalaya.com
 */
 
 const url = $request.url;

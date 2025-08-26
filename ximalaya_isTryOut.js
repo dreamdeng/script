@@ -4,7 +4,8 @@
  */
 /*
 [rewrite_local]
-^https?://(xxm|mpay)\.ximalaya\.com/.* url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/ximalaya_isTryOut.js
+^https?://xxm\.ximalaya\.com/mobile/album/v2/trackRecord/queryTrackRecordsByAlbumIdAndUid.* url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/ximalaya_isTryOut.js
+^https?://mpay\.ximalaya\.com/mobile/album/trackRecord/palyTrack/.* url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/ximalaya_isTryOut.js
 [mitm] 
 hostname = xxm.ximalaya.com, mpay.ximalaya.com
 */

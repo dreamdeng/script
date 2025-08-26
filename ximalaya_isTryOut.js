@@ -3,7 +3,6 @@
  * hostname = xxm.ximalaya.com
  */
 /*
-喜马拉雅试听修改
 [rewrite_local]
 ^https?://xxm\.ximalaya\.com/.* url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/ximalaya_isTryOut.js
 [mitm] 

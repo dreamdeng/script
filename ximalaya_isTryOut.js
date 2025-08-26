@@ -4,7 +4,7 @@
  */
 /*
 [rewrite_local]
-^https?://xxm\.ximalaya\.com/.* url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/ximalaya_isTryOut.js
+^https?://.*ximalaya.*\.com/.* url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/ximalaya_isTryOut.js
 [mitm] 
 hostname = xxm.ximalaya.com
 */

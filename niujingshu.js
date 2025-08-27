@@ -1,0 +1,68 @@
+# Quantumult X 脚本配置
+# 在 [rewrite_local] 中添加：
+# ^https://m\.ximalaya\.com/qqx/user/deduceUserByOrder url script-response-body ximalaya_modifier.js
+# ^https://m\.ximalaya\.com/qqx/lesson/queryLessonListV3 url script-response-body ximalaya_modifier.js
+
+# 在 [mitm] 中添加：
+# hostname = m.ximalaya.com
+
+// JavaScript 脚本内容
+let body = $response.body;
+let obj = JSON.parse(body);
+
+// 获取当前请求的URL
+const url = $request.url;
+
+// 处理用户订单接口
+if (url.includes('/user/deduceUserByOrder')) {
+    if (obj.data) {
+        obj.data.hasBuyOldCamp = true;
+        obj.data.hasBuyNewCamp = true;
+        obj.data.hasBuyThreeCamp = true;
+        obj.data.hasBuyFourCamp = true;
+        obj.data.hasBuyOldLongCamp = true;
+        obj.data.hasBuyOldNotLongCamp = true;
+        obj.data.hasBuyNewLongCamp = true;
+        obj.data.hasBuyNewNotLongCamp = true;
+        obj.data.hasThreeExperienceCampOrder = true;
+        obj.data.hasThreeLongCampOrder = true;
+        obj.data.hasFourExperienceCampOrder = true;
+        obj.data.hasFourLongCampOrder = true;
+    }
+    console.log('修改用户订单接口响应完成');
+}
+
+// 处理课程列表接口
+else if (url.includes('/lesson/queryLessonListV3')) {
+    if (obj.data && obj.data.groups) {
+        const timestamp = 1724741097000;
+        
+        obj.data.groups.forEach(group => {
+            // 修改books字段
+            if (group.books) {
+                group.books.forEach(book => {
+                    book.unLocked = true;
+                    book.purchased = true;
+                    book.started = timestamp;
+                    book.isVip = true;
+                });
+            }
+            
+            // 修改lessons字段
+            if (group.lessons) {
+                group.lessons.forEach(lesson => {
+                    lesson.unLocked = true;
+                    lesson.purchased = true;
+                    lesson.semesterId = obj.data.semesterId;
+                    lesson.campId = obj.data.campId;
+                    lesson.startDate = timestamp;
+                    lesson.started = true;
+                });
+            }
+        });
+    }
+    console.log('修改课程列表接口响应完成');
+}
+
+// 返回修改后的响应
+$done({ body: JSON.stringify(obj) });

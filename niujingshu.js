@@ -33,7 +33,7 @@ if (url.includes('/user/deduceUserByOrder')) {
 }
 
 // 处理课程列表接口
-else if (url.includes('/lesson/queryLessonListV3')) {
+if (url.includes('/lesson/queryLessonListV3')) {
     if (obj.data && obj.data.groups) {
         const timestamp = 1724741097000;
         let bookCount = 0;

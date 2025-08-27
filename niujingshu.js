@@ -1,12 +1,11 @@
-# Quantumult X 脚本配置
-# 在 [rewrite_local] 中添加：
-# ^https://m\.ximalaya\.com/qqx/user/deduceUserByOrder url script-response-body ximalaya_modifier.js
-# ^https://m\.ximalaya\.com/qqx/lesson/queryLessonListV3 url script-response-body ximalaya_modifier.js
+/*
+[rewrite_local]
+^https://m\.ximalaya\.com/qqx/user/deduceUserByOrder url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/niujingshu.js
+^https://m\.ximalaya\.com/qqx/lesson/queryLessonListV3 url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/niujingshu.js
+[mitm] 
+hostname = m.ximalaya.com
+*/
 
-# 在 [mitm] 中添加：
-# hostname = m.ximalaya.com
-
-// JavaScript 脚本内容
 let body = $response.body;
 let obj = JSON.parse(body);
 

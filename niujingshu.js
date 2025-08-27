@@ -29,7 +29,7 @@ if (url.includes('/user/deduceUserByOrder')) {
         obj.data.hasFourLongCampOrder = true;
     }
     console.log('修改用户订单接口响应完成');
-    $notification.post("喜马拉雅", "用户订单接口", "✅ 已解锁所有训练营购买状态");
+    $notify("喜马拉雅", "用户订单接口", "✅ 已解锁所有训练营购买状态", {});
 }
 
 // 处理课程列表接口
@@ -65,7 +65,7 @@ else if (url.includes('/lesson/queryLessonListV3')) {
             }
         });
         
-        $notification.post("喜马拉雅", "课程列表接口", `✅ 已解锁 ${bookCount} 本书籍，${lessonCount} 个课程`);
+        $notify("喜马拉雅", "课程列表接口", `✅ 已解锁 ${bookCount} 本书籍，${lessonCount} 个课程`, {});
     }
     console.log('修改课程列表接口响应完成');
 }

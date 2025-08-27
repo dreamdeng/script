@@ -6,15 +6,39 @@
 hostname = m.ximalaya.com
 */
 
-let body = $response.body;
-let obj = JSON.parse(body);
+// 喜马拉雅权限解锁脚本
+console.log('=== 喜马拉雅脚本开始执行 ===');
 
-// 获取当前请求的URL
 const url = $request.url;
+const body = $response.body;
+
+console.log('请求URL:', url);
+console.log('响应体大小:', body ? body.length : 0);
+
+// 无论如何都先发送通知，确认脚本被调用
+$notify("喜马拉雅脚本", "脚本已执行", `URL: ${url.split('?')[0]}`, {});
+
+if (!body) {
+    console.log('响应体为空，退出处理');
+    $done({});
+    return;
+}
+
+let obj;
+try {
+    obj = JSON.parse(body);
+    console.log('JSON解析成功');
+} catch (e) {
+    console.log('JSON解析失败:', e.message);
+    $done({ body: body });
+    return;
+}
 
 // 处理用户订单接口
-if (url.includes('/user/deduceUserByOrder')) {
-    if (obj.data) {
+if (url.includes('deduceUserByOrder')) {
+    console.log('=== 处理用户订单接口 ===');
+    
+    if (obj && obj.data) {
         obj.data.hasBuyOldCamp = true;
         obj.data.hasBuyNewCamp = true;
         obj.data.hasBuyThreeCamp = true;
@@ -27,58 +51,69 @@ if (url.includes('/user/deduceUserByOrder')) {
         obj.data.hasThreeLongCampOrder = true;
         obj.data.hasFourExperienceCampOrder = true;
         obj.data.hasFourLongCampOrder = true;
+        
+        console.log('用户订单数据修改完成');
+        $notify("喜马拉雅", "用户订单", "✅ 已解锁所有训练营", {});
+    } else {
+        console.log('用户订单接口数据结构异常');
+        $notify("喜马拉雅", "用户订单", "❌ 数据结构异常", {});
     }
-    console.log('修改用户订单接口响应完成');
-    $notify("喜马拉雅", "用户订单接口", "✅ 已解锁所有训练营购买状态", {});
 }
 
 // 处理课程列表接口
-if (url.includes('/lesson/queryLessonListV3')) {
-    console.log('检测到课程列表接口请求');
-    console.log('响应数据:', JSON.stringify(obj, null, 2));
+if (url.includes('queryLessonListV3')) {
+    console.log('=== 处理课程列表接口 ===');
+    console.log('完整响应数据:', JSON.stringify(obj, null, 2));
     
-    if (obj.data && obj.data.groups) {
+    if (obj && obj.data && obj.data.groups) {
+        console.log('找到groups，开始处理...');
         const timestamp = 1724741097000;
-        let bookCount = 0;
-        let lessonCount = 0;
+        let totalModified = 0;
         
-        obj.data.groups.forEach(group => {
-            // 修改books字段
-            if (group.books) {
+        obj.data.groups.forEach((group, groupIndex) => {
+            console.log(`处理group ${groupIndex}`);
+            
+            if (group.books && Array.isArray(group.books)) {
                 group.books.forEach(book => {
                     book.unLocked = true;
                     book.purchased = true;
                     book.started = timestamp;
                     book.isVip = true;
-                    bookCount++;
+                    totalModified++;
                 });
+                console.log(`修改了${group.books.length}本书`);
             }
             
-            // 修改lessons字段
-            if (group.lessons) {
+            if (group.lessons && Array.isArray(group.lessons)) {
                 group.lessons.forEach(lesson => {
                     lesson.unLocked = true;
                     lesson.purchased = true;
-                    lesson.semesterId = obj.data.semesterId;
-                    lesson.campId = obj.data.campId;
+                    lesson.semesterId = obj.data.semesterId || 0;
+                    lesson.campId = obj.data.campId || 0;
                     lesson.startDate = timestamp;
                     lesson.started = true;
-                    lessonCount++;
+                    totalModified++;
                 });
+                console.log(`修改了${group.lessons.length}个课程`);
             }
         });
         
-        $notify("喜马拉雅", "课程列表接口", `✅ 已解锁 ${bookCount} 本书籍，${lessonCount} 个课程`, {});
-    } else if (obj.data) {
-        // 如果data存在但结构不同，尝试其他可能的结构
-        console.log('数据结构与预期不符，尝试其他处理方式');
-        $notify("喜马拉雅", "课程列表接口", "⚠️ 检测到接口但数据结构异常", {});
+        console.log(`课程列表处理完成，总共修改 ${totalModified} 项`);
+        $notify("喜马拉雅", "课程列表", `✅ 已解锁 ${totalModified} 项内容`, {});
+        
     } else {
-        console.log('响应数据中没有data字段');
-        $notify("喜马拉雅", "课程列表接口", "❌ 响应数据异常", {});
+        console.log('课程列表数据结构检查:');
+        console.log('- obj存在:', !!obj);
+        console.log('- obj.data存在:', !!(obj && obj.data));
+        console.log('- obj.data.groups存在:', !!(obj && obj.data && obj.data.groups));
+        
+        if (obj && obj.data) {
+            console.log('data字段内容:', Object.keys(obj.data));
+        }
+        
+        $notify("喜马拉雅", "课程列表", "⚠️ 数据结构不符合预期", {});
     }
-    console.log('修改课程列表接口响应完成');
 }
 
-// 返回修改后的响应
+console.log('=== 喜马拉雅脚本执行完成 ===');
 $done({ body: JSON.stringify(obj) });

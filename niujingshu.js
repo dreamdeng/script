@@ -34,6 +34,9 @@ if (url.includes('/user/deduceUserByOrder')) {
 
 // 处理课程列表接口
 if (url.includes('/lesson/queryLessonListV3')) {
+    console.log('检测到课程列表接口请求');
+    console.log('响应数据:', JSON.stringify(obj, null, 2));
+    
     if (obj.data && obj.data.groups) {
         const timestamp = 1724741097000;
         let bookCount = 0;
@@ -66,6 +69,13 @@ if (url.includes('/lesson/queryLessonListV3')) {
         });
         
         $notify("喜马拉雅", "课程列表接口", `✅ 已解锁 ${bookCount} 本书籍，${lessonCount} 个课程`, {});
+    } else if (obj.data) {
+        // 如果data存在但结构不同，尝试其他可能的结构
+        console.log('数据结构与预期不符，尝试其他处理方式');
+        $notify("喜马拉雅", "课程列表接口", "⚠️ 检测到接口但数据结构异常", {});
+    } else {
+        console.log('响应数据中没有data字段');
+        $notify("喜马拉雅", "课程列表接口", "❌ 响应数据异常", {});
     }
     console.log('修改课程列表接口响应完成');
 }

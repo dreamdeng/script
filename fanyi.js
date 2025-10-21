@@ -2,6 +2,8 @@
  * Quantumult X 重写脚本
  * 用于修改 transyncai.com 用户时长统计接口返回
  * 脚本地址: https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/fanyi.js
+ [rewrite_local]
+^https:\/\/api\.transyncai\.com\/api\/user_time_credit\/statistics url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/fanyi.js
  */
 
 let body = $response.body;

@@ -1,9 +1,9 @@
 /*
 [rewrite_local]
-^https:\/\/api\.transyncai\.com\/api\/user_time_credit\/statistics url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/fanyi.js
+^https:\/\/*\.transyncai\.com\/api\/user_time_credit\/statistics url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/fanyi.js
 
 [mitm]
-hostname = api.transyncai.com
+hostname = *.transyncai.com
 */
 
 let body = $response.body;

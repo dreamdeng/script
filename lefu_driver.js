@@ -1,6 +1,6 @@
 /*
 [rewrite_local]
-^https://api\.driving-coach\.com/ddt-course/api/coreCourse/coreCourseList.* url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/lefu_driver.js
+^https://api\.driving-coach\.com/love-ddt/api/app/user/getUserInfo.* url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/lefu_driver.js
 [mitm] 
 hostname = api.driving-coach.com
 */

@@ -2,7 +2,7 @@
 /*
 [rewrite_local]
 # 替换用户信息接口
-^https:\/\/lvl\.xiaoshufenji\.com\/prod-api\/frontend\/user\/info\?version=222 url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/xiaoshufenji.js
+^https:\/\/lvl\.xiaoshufenji\.com\/prod-api\/frontend\/user\/info\?version=* url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/xiaoshufenji.js
 
 [mitm]
 hostname = lvl.xiaoshufenji.com

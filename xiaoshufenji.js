@@ -1,15 +1,19 @@
 /*
 [rewrite_local]
-# 替换用户信息接口
+# 用户信息接口 - 修改会员到期时间
 ^https:\/\/lvl\.xiaoshufenji\.com\/prod-api\/frontend\/user\/info\?version=.* url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/xiaoshufenji.js
+
+# 文章列表接口 - 修改免费和今日状态
+^https:\/\/lvl\.xiaoshufenji\.com\/prod-api\/frontend\/article\/* url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/xiaoshufenji.js
 
 [mitm]
 hostname = lvl.xiaoshufenji.com
 */
 
 /**
- * Quantumult X 重写脚本 - 修改会员到期时间
- * 功能：解密响应 → 修改 memberExpireTime → 重新加密
+ * Quantumult X 重写脚本
+ * 功能1：修改用户信息 - 会员到期时间
+ * 功能2：修改文章列表 - 免费和今日状态
  */
 
 // ==================== SM4 加密算法实现 ====================
@@ -190,86 +194,154 @@ function sm4Decrypt(ciphertextHex, keyHex) {
     return bytesToString(unpaddedData);
 }
 
-// ==================== 主处理逻辑 ====================
+// ==================== 工具函数 ====================
 
 const KEY = "e49a515a1cec7a1cf2340f3abe8f7001";
 
-function modifyUserInfo() {
+function modifyArticlesFreeStatus(articles) {
+    if (!Array.isArray(articles)) return articles;
+    
+    let modifiedCount = 0;
+    articles.forEach(article => {
+        if (article.free !== true) {
+            article.free = true;
+            modifiedCount++;
+        }
+        if (article.today !== true) {
+            article.today = true;
+        }
+    });
+    
+    console.log(`✅ 修改了 ${modifiedCount} 篇文章为免费状态`);
+    return articles;
+}
+
+function deepModifyArticles(obj) {
+    if (typeof obj !== 'object' || obj === null) return obj;
+    
+    if (Array.isArray(obj)) {
+        return obj.map(item => deepModifyArticles(item));
+    }
+    
+    // 如果对象有 free 或 today 字段，修改它们
+    if ('free' in obj || 'today' in obj) {
+        obj.free = true;
+        obj.today = true;
+    }
+    
+    // 递归处理所有属性
+    for (let key in obj) {
+        if (obj.hasOwnProperty(key)) {
+            obj[key] = deepModifyArticles(obj[key]);
+        }
+    }
+    
+    return obj;
+}
+
+// ==================== 主处理逻辑 ====================
+
+function handleResponse() {
     try {
-        // 获取原始响应
+        const url = $request.url;
         const body = $response.body;
         
-        console.log("📥 收到响应");
-        console.log("原始响应体:", body);
+        console.log("="*50);
+        console.log("🔗 请求URL:", url);
         
-        // 解析外层 JSON
-        const response = JSON.parse(body);
-        console.log("📦 解析响应:", JSON.stringify(response, null, 2));
-        
-        // 检查响应格式
-        if (response.code !== 200) {
-            console.log("❌ 响应码不是200，跳过处理");
+        // 判断是哪个接口
+        if (url.includes('/user/info')) {
+            handleUserInfo(body);
+        } else if (url.includes('/article/home')) {
+            handleArticleHome(body);
+        } else {
+            console.log("⚠️ 未匹配的接口");
             $done({});
-            return;
         }
-        
-        // 获取加密的 data
-        const encryptedData = response.data;
-        
-        if (!encryptedData || encryptedData === "") {
-            console.log("⚠️ data 为空，跳过处理");
-            $done({});
-            return;
-        }
-        
-        console.log("🔒 加密数据长度:", encryptedData.length);
-        console.log("加密数据(前100字符):", encryptedData.substring(0, 100));
-        
-        // 解密
-        console.log("🔓 开始解密...");
-        const decrypted = sm4Decrypt(encryptedData, KEY);
-        console.log("解密成功:", decrypted);
-        
-        // 解析用户数据
-        const userData = JSON.parse(decrypted);
-        console.log("📝 原始会员到期时间:", userData.memberExpireTime);
-        console.log("📝 原始会员状态:", userData.memberStatus);
-        
-        // 修改会员到期时间和状态
-        userData.memberExpireTime = "2099-11-15";
-        userData.memberStatus = 2; // 确保是会员状态
-        
-        console.log("✅ 修改后会员到期时间:", userData.memberExpireTime);
-        console.log("✅ 修改后会员状态:", userData.memberStatus);
-        
-        // 重新序列化
-        const modifiedJson = JSON.stringify(userData);
-        console.log("📦 修改后的 JSON:", modifiedJson);
-        
-        // 重新加密
-        console.log("🔐 开始加密...");
-        const encrypted = sm4Encrypt(modifiedJson, KEY);
-        console.log("加密成功，长度:", encrypted.length);
-        console.log("新密文(前100字符):", encrypted.substring(0, 100));
-        
-        // 构造新的响应
-        response.data = encrypted;
-        const newBody = JSON.stringify(response);
-        
-        console.log("🎉 处理完成，返回新响应");
-        
-        // 返回修改后的响应
-        $done({ body: newBody });
         
     } catch (error) {
         console.log("❌ 处理失败:", error.message);
         console.log("错误堆栈:", error.stack);
-        console.log("错误位置:", error.toString());
+        $done({});
+    }
+}
+
+function handleUserInfo(body) {
+    console.log("📝 处理用户信息接口");
+    
+    try {
+        const response = JSON.parse(body);
         
-        // 发生错误时返回原始响应
+        if (response.code !== 200 || !response.data) {
+            console.log("⚠️ 响应异常，跳过处理");
+            $done({});
+            return;
+        }
+        
+        console.log("🔓 解密用户数据...");
+        const decrypted = sm4Decrypt(response.data, KEY);
+        const userData = JSON.parse(decrypted);
+        
+        console.log("📝 原始会员到期时间:", userData.memberExpireTime);
+        
+        userData.memberExpireTime = "2099-11-15";
+        userData.memberStatus = 2;
+        
+        console.log("✅ 修改后会员到期时间:", userData.memberExpireTime);
+        
+        const modifiedJson = JSON.stringify(userData);
+        const encrypted = sm4Encrypt(modifiedJson, KEY);
+        
+        response.data = encrypted;
+        const newBody = JSON.stringify(response);
+        
+        console.log("🎉 用户信息处理完成");
+        $done({ body: newBody });
+        
+    } catch (error) {
+        console.log("❌ 用户信息处理失败:", error.message);
+        $done({});
+    }
+}
+
+function handleArticleHome(body) {
+    console.log("📚 处理文章列表接口");
+    
+    try {
+        const response = JSON.parse(body);
+        
+        if (response.code !== 200 || !response.data) {
+            console.log("⚠️ 响应异常，跳过处理");
+            $done({});
+            return;
+        }
+        
+        console.log("🔓 解密文章数据...");
+        const decrypted = sm4Decrypt(response.data, KEY);
+        const articleData = JSON.parse(decrypted);
+        
+        console.log("📊 原始数据结构:", JSON.stringify(articleData, null, 2).substring(0, 500));
+        
+        // 深度修改所有文章的 free 和 today 状态
+        const modifiedData = deepModifyArticles(articleData);
+        
+        console.log("✅ 已将所有文章设置为免费和今日推荐");
+        
+        const modifiedJson = JSON.stringify(modifiedData);
+        const encrypted = sm4Encrypt(modifiedJson, KEY);
+        
+        response.data = encrypted;
+        const newBody = JSON.stringify(response);
+        
+        console.log("🎉 文章列表处理完成");
+        $done({ body: newBody });
+        
+    } catch (error) {
+        console.log("❌ 文章列表处理失败:", error.message);
+        console.log("错误堆栈:", error.stack);
         $done({});
     }
 }
 
 // 执行
-modifyUserInfo();
+handleResponse();

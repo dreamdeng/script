@@ -1,7 +1,7 @@
 /*
 [rewrite_local]
 # 文章列表接口 - 修改免费和今日状态
-^https:\/\/lvl\.xiaoshufenji\.com\/prod-api\/frontend\/article\/* url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/xiaoshufenji2.js
+^https:\/\/lvl\.xiaoshufenji\.com\/prod-api\/frontend\/article\/soundBath url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/xiaoshufenji2.js
 
 [mitm]
 hostname = lvl.xiaoshufenji.com
@@ -246,57 +246,11 @@ function handleResponse() {
         console.log("="*50);
         console.log("🔗 请求URL:", url);
         
-        // 判断是哪个接口
-        if (url.includes('/user/info')) {
-            handleUserInfo(body);
-        } else if (url.includes('/article/home')) {
-            handleArticleHome(body);
-        } else {
-            console.log("⚠️ 未匹配的接口");
-            $done({});
-        }
+      handleArticleHome(body);
         
     } catch (error) {
         console.log("❌ 处理失败:", error.message);
         console.log("错误堆栈:", error.stack);
-        $done({});
-    }
-}
-
-function handleUserInfo(body) {
-    console.log("📝 处理用户信息接口");
-    
-    try {
-        const response = JSON.parse(body);
-        
-        if (response.code !== 200 || !response.data) {
-            console.log("⚠️ 响应异常，跳过处理");
-            $done({});
-            return;
-        }
-        
-        console.log("🔓 解密用户数据...");
-        const decrypted = sm4Decrypt(response.data, KEY);
-        const userData = JSON.parse(decrypted);
-        
-        console.log("📝 原始会员到期时间:", userData.memberExpireTime);
-        
-        userData.memberExpireTime = "2099-11-15";
-        userData.memberStatus = 2;
-        
-        console.log("✅ 修改后会员到期时间:", userData.memberExpireTime);
-        
-        const modifiedJson = JSON.stringify(userData);
-        const encrypted = sm4Encrypt(modifiedJson, KEY);
-        
-        response.data = encrypted;
-        const newBody = JSON.stringify(response);
-        
-        console.log("🎉 用户信息处理完成");
-        $done({ body: newBody });
-        
-    } catch (error) {
-        console.log("❌ 用户信息处理失败:", error.message);
         $done({});
     }
 }

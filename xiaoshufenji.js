@@ -1,13 +1,11 @@
-
 /*
 [rewrite_local]
 # 替换用户信息接口
-^https:\/\/lvl\.xiaoshufenji\.com\/prod-api\/frontend\/user\/info\?version=* url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/xiaoshufenji.js
+^https:\/\/lvl\.xiaoshufenji\.com\/prod-api\/frontend\/user\/info\?version=.* url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/xiaoshufenji.js
 
 [mitm]
 hostname = lvl.xiaoshufenji.com
 */
-
 
 /**
  * Quantumult X 重写脚本 - 修改会员到期时间
@@ -201,21 +199,48 @@ function modifyUserInfo() {
         // 获取原始响应
         const body = $response.body;
         
-        console.log("📥 收到响应，长度:", body.length);
-        console.log("原始密文(前100字符):", body.substring(0, 100));
+        console.log("📥 收到响应");
+        console.log("原始响应体:", body);
+        
+        // 解析外层 JSON
+        const response = JSON.parse(body);
+        console.log("📦 解析响应:", JSON.stringify(response, null, 2));
+        
+        // 检查响应格式
+        if (response.code !== 200) {
+            console.log("❌ 响应码不是200，跳过处理");
+            $done({});
+            return;
+        }
+        
+        // 获取加密的 data
+        const encryptedData = response.data;
+        
+        if (!encryptedData || encryptedData === "") {
+            console.log("⚠️ data 为空，跳过处理");
+            $done({});
+            return;
+        }
+        
+        console.log("🔒 加密数据长度:", encryptedData.length);
+        console.log("加密数据(前100字符):", encryptedData.substring(0, 100));
         
         // 解密
         console.log("🔓 开始解密...");
-        const decrypted = sm4Decrypt(body, KEY);
+        const decrypted = sm4Decrypt(encryptedData, KEY);
         console.log("解密成功:", decrypted);
         
-        // 解析 JSON
+        // 解析用户数据
         const userData = JSON.parse(decrypted);
         console.log("📝 原始会员到期时间:", userData.memberExpireTime);
+        console.log("📝 原始会员状态:", userData.memberStatus);
         
-        // 修改会员到期时间
+        // 修改会员到期时间和状态
         userData.memberExpireTime = "2099-11-15";
+        userData.memberStatus = 2; // 确保是会员状态
+        
         console.log("✅ 修改后会员到期时间:", userData.memberExpireTime);
+        console.log("✅ 修改后会员状态:", userData.memberStatus);
         
         // 重新序列化
         const modifiedJson = JSON.stringify(userData);
@@ -227,12 +252,19 @@ function modifyUserInfo() {
         console.log("加密成功，长度:", encrypted.length);
         console.log("新密文(前100字符):", encrypted.substring(0, 100));
         
+        // 构造新的响应
+        response.data = encrypted;
+        const newBody = JSON.stringify(response);
+        
+        console.log("🎉 处理完成，返回新响应");
+        
         // 返回修改后的响应
-        $done({ body: encrypted });
+        $done({ body: newBody });
         
     } catch (error) {
         console.log("❌ 处理失败:", error.message);
         console.log("错误堆栈:", error.stack);
+        console.log("错误位置:", error.toString());
         
         // 发生错误时返回原始响应
         $done({});

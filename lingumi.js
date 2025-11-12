@@ -1,6 +1,6 @@
 /*
 [rewrite_local]
-^https:\/\/learning-api\.lingumi\.com\.cn\/children\/.*\/subject\/english-immersive-speaking\/module\/.*$ url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/lingumi.js
+^https:\/\/learning-api\.lingumi\.com\.cn\/children\/.*\/subject\/.*\/module\/.*$ url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/lingumi.js
 [mitm]
 hostname = learning-api.lingumi.com.cn
 */

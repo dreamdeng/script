@@ -1,6 +1,6 @@
 /*
 [rewrite_local]
-^https:\/\/learning-api\.lingumi\.com\.cn\/children\/.*\/subject\/english-immersive-speaking\/module\/.*$ url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/lingumi.js
+^https:\/\/learning-api\.lingumi\.com\.cn\/children\/.*\/subject\/.*\/module\/.*$ url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/lingumi.js
 ^https:\/\/learning-api\.lingumi\.com\.cn\/trial-paywall\/v2\?.*$ url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/lingumi.js
 ^https:\/\/learning-api\.lingumi\.com\.cn\/freeplay-activities\/.*$ url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/lingumi.js
 ^https:\/\/learning-api\.lingumi\.com\.cn\/children\/.*\/curriculum\/v2.*$ url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/lingumi.js
@@ -16,7 +16,7 @@ try {
     let obj = JSON.parse(body);
     
     // 接口1: module 解锁
-    if (url.includes('/subject/english-immersive-speaking/module/')) {
+    if (url.includes('/subject/') && url.includes('/module/')) {
         if (obj.module && obj.module.numberOfTrialLessons) {
             obj.module.numberOfTrialLessons = "999";
         }

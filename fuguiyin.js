@@ -2,11 +2,21 @@
 // hostname = qy.ps7.cc
 
 /*
-[rewrite_local]
-^https?://qy\.ps7\.cc/public/index\.php/api/app/isVip url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/fuguiyin.js
 
-[mitm] 
+════════════════════════════════════════════════
+请将以下规则添加到 Quantumult X 配置文件中
+════════════════════════════════════════════════
+
+[rewrite_local]
+^https?://qy\.ps7\.cc/public/index\.php/api/app/isVip url script-response-body fuguiyin.js
+
+[mitm]
 hostname = qy.ps7.cc
+
+════════════════════════════════════════════════
+脚本代码开始
+════════════════════════════════════════════════
+
 */
 
 const url = $request.url;
@@ -23,9 +33,7 @@ if (url.includes("/api/app/isVip")) {
       obj.data.vip = true;                 // 改为VIP true
       obj.data.time = 4102358400;          // 2099-12-31 00:00:00 UTC的时间戳
       obj.data.over_time = 4102358400;     // 同样改为2099年
-      
-      // 可选：修改提示信息为更友好的内容
-      obj.msg = "VIP会员永久有效";
+      obj.msg = "VIP会员永久有效";          // 修改提示信息
       
       console.log('富贵VIP脚本: 成功修改VIP状态');
     } else {

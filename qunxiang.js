@@ -1,12 +1,12 @@
-/**
- * Quantumult X 单文件重写脚本 - 群响用户信息修改
- *
- * [rewrite_local]
- * ^https?:\/\/ma\.qunxiang\.club\/user\/ url script-response-body https://raw.githubusercontent.com/dreamdeng/script/main/qunxiang.js
- *
- * [mitm]
- * hostname = ma.qunxiang.club
- */
+/*
+群响用户信息修改
+
+[rewrite_local]
+^https?:\/\/ma\.qunxiang\.club\/user\/ url script-response-body https://raw.githubusercontent.com/dreamdeng/script/main/qunxiang.js
+
+[mitm]
+hostname = ma.qunxiang.club
+*/
 
 let body = $response.body;
 

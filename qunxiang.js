@@ -1,5 +1,4 @@
 /*
-群响用户信息修改
 
 [rewrite_local]
 ^https?:\/\/ma\.qunxiang\.club\/user\/ url script-response-body https://raw.githubusercontent.com/dreamdeng/script/main/qunxiang.js

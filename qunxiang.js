@@ -3,7 +3,7 @@
  * @description 修改 ma.qunxiang.club/user/* 接口返回数据
  * 
  * [rewrite_local]
- * ^https?:\/\/ma\.qunxiang\.club\/user\/\d+ url script-response-body https://raw.githubusercontent.com/YourUsername/YourRepo/main/qunxiang.js
+ * ^https?:\/\/ma\.qunxiang\.club\/user\/\d+ url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/qunxiang.js
  * 
  * [mitm]
  * hostname = ma.qunxiang.club

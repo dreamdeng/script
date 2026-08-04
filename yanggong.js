@@ -5,11 +5,8 @@
  * # 1. 匹配 wuzuyuan.com 接口
  * ^https?:\/\/wuzuyuan\.com\/zuyuan\/api\/(clazz\/detail|user\/info|clazz\/center) url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/yanggong.js
  * 
- * # 2. 匹配 lanxinlaoshi.com 课程解锁接口
- * ^https:\/\/app\.lanxinlaoshi\.com:8088\/crmebfront\/api\/front\/app\/course\/manage\/ownCourse\/\d+ url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/lanxin.js
- * 
  * [mitm]
- * hostname = wuzuyuan.com, app.lanxinlaoshi.com
+ * hostname = wuzuyuan.com
  */
 
 const url = $request.url;

@@ -1,4 +1,4 @@
-/**
+/*
  Quantumult X 脚本：自动修改接口数据
  
  [rewrite_local]

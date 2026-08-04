@@ -2,7 +2,6 @@
  * Quantumult X 脚本：自动修改接口数据
  * 
  * [rewrite_local]
- * # 1. 匹配 wuzuyuan.com 接口
  * ^https?:\/\/wuzuyuan\.com\/zuyuan\/api\/(clazz\/detail|user\/info|clazz\/center) url script-response-body https://raw.githubusercontent.com/dreamdeng/script/refs/heads/main/yanggong.js
  * 
  * [mitm]
